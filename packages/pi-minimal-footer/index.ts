@@ -10,7 +10,7 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { buildSessionContext, getAgentDir } from "@earendil-works/pi-coding-agent";
 import { visibleWidth, truncateToWidth } from "@earendil-works/pi-tui";
-import { execSync } from "node:child_process";
+import { execSync, execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
   existsSync,
@@ -121,10 +121,15 @@ function refreshGitCache(): boolean {
   let next: GitCache | null = null;
 
   try {
-    const status = execSync("git status --porcelain=v2 --branch 2>/dev/null", {
-      encoding: "utf8",
-      timeout: 1000,
-    });
+    const status = execFileSync(
+      "git",
+      ["status", "--porcelain=v2", "--branch"],
+      {
+        encoding: "utf8",
+        timeout: 1000,
+        stdio: ["ignore", "pipe", "ignore"],
+      },
+    );
     next = parseGitStatus(status.trimEnd());
   } catch {
     next = null;
